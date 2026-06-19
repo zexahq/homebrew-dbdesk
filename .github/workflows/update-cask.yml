@@ -1,0 +1,73 @@
+name: Update cask and formula on new release
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get latest release from zexahq/dbdesk
+        id: release
+        run: |
+          tag=$(gh release view --repo zexahq/dbdesk --json tagName --jq .tagName)
+          version=${tag#v}
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Check current versions
+        id: current
+        run: |
+          cask_ver=$(grep -E '^  version ' Casks/dbdesk.rb | awk -F'"' '{print $2}')
+          formula_ver=$(grep -E '^  version ' Formula/dbdesk.rb | awk -F'"' '{print $2}')
+          echo "cask=$cask_ver" >> "$GITHUB_OUTPUT"
+          echo "formula=$formula_ver" >> "$GITHUB_OUTPUT"
+
+      - name: Download DMG and compute SHA256
+        if: steps.current.outputs.cask != steps.release.outputs.version
+        id: dmg
+        run: |
+          v=${{ steps.release.outputs.version }}
+          curl -sL -o dbdesk.dmg \
+            "https://github.com/zexahq/dbdesk/releases/download/v${v}/dbdesk-${v}.dmg"
+          echo "sha256=$(shasum -a 256 dbdesk.dmg | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Download AppImage and compute SHA256
+        if: steps.current.outputs.formula != steps.release.outputs.version
+        id: appimage
+        run: |
+          v=${{ steps.release.outputs.version }}
+          curl -sL -o dbdesk.AppImage \
+            "https://github.com/zexahq/dbdesk/releases/download/v${v}/dbdesk-${v}.AppImage"
+          echo "sha256=$(shasum -a 256 dbdesk.AppImage | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Update cask file
+        if: steps.current.outputs.cask != steps.release.outputs.version
+        run: |
+          v=${{ steps.release.outputs.version }}
+          s=${{ steps.dmg.outputs.sha256 }}
+          sed -i '' "s/version \"[^\"]*\"/version \"$v\"/" Casks/dbdesk.rb
+          sed -i '' "s/sha256 \"[^\"]*\"/sha256 \"$s\"/" Casks/dbdesk.rb
+
+      - name: Update formula file
+        if: steps.current.outputs.formula != steps.release.outputs.version
+        run: |
+          v=${{ steps.release.outputs.version }}
+          s=${{ steps.appimage.outputs.sha256 }}
+          sed -i '' "s/version \"[^\"]*\"/version \"$v\"/" Formula/dbdesk.rb
+          sed -i '' "s/sha256 \"[^\"]*\"/sha256 \"$s\"/" Formula/dbdesk.rb
+
+      - name: Commit and push
+        if: steps.current.outputs.cask != steps.release.outputs.version || steps.current.outputs.formula != steps.release.outputs.version
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add Casks/dbdesk.rb Formula/dbdesk.rb
+          git commit -m "Update dbdesk to v${{ steps.release.outputs.version }}"
+          git push
