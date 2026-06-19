@@ -6,6 +6,7 @@ Homebrew Cask + Formula for [dbdesk](https://github.com/zexahq/dbdesk).
 
 ```bash
 brew tap zexahq/dbdesk
+brew trust zexahq/dbdesk
 brew install --cask dbdesk
 ```
 
