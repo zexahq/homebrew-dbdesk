@@ -12,7 +12,7 @@ cask "dbdesk" do
     strategy :github_latest
   end
 
-  app "dbdesk.app"
+  app "DBDesk.app"
 
   zap trash: [
     "~/Library/Application Support/dbdesk",
