@@ -1,0 +1,21 @@
+name: Validate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check Homebrew style
+        run: brew style Casks/dbdesk.rb Formula/dbdesk.rb
+
+      - name: Check Ruby syntax
+        run: |
+          ruby -c Casks/dbdesk.rb
+          ruby -c Formula/dbdesk.rb

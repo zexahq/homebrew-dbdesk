@@ -1,8 +1,8 @@
 cask "dbdesk" do
-  version "0.1.9"
-  sha256 "a7285092e233c907ea2afcd7dcc9335b2a826bf9a5081d0092a3561f00d7a887"
+  version "0.1.12"
+  sha256 "fd874d8ab19e33a3fa7f215eb8f01a3c83e1dc2a29da3de44c01bfada1fc1aae"
 
-  url "https://github.com/zexahq/dbdesk/releases/download/v#{version}/dbdesk-#{version}.dmg"
+  url "https://github.com/zexahq/dbdesk/releases/download/v0.1.12/DBDesk-0.1.12.dmg"
   name "dbdesk"
   desc "Database desktop client"
   homepage "https://github.com/zexahq/dbdesk"
@@ -12,16 +12,20 @@ cask "dbdesk" do
     strategy :github_latest
   end
 
+  depends_on arch: :arm64
+  depends_on :macos
+
   app "DBDesk.app"
+
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-rd", "com.apple.quarantine", "DBDesk.app"],
+        base: :appdir
+  end
 
   zap trash: [
     "~/Library/Application Support/dbdesk",
     "~/Library/Preferences/app.zexa.dbdesk.plist",
     "~/Library/Saved Application State/app.zexa.dbdesk.savedState",
   ]
-
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-rd", "com.apple.quarantine", "#{appdir}/dbdesk.app"]
-  end
 end
