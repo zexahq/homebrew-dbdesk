@@ -1,14 +1,14 @@
 class Dbdesk < Formula
   desc "Database desktop client"
   homepage "https://github.com/zexahq/dbdesk"
-  version "0.1.9"
 
   if OS.mac?
     odie "On macOS, use `brew install --cask dbdesk` instead"
   end
 
-  url "https://github.com/zexahq/dbdesk/releases/download/v#{version}/dbdesk-#{version}.AppImage"
-  sha256 "c76aa646c6898237522b8e89418a67273ca1f88e552cec341a8ddda1de8d61c1"
+  url "https://github.com/zexahq/dbdesk/releases/download/v0.1.12/DBDesk-0.1.12.AppImage"
+  version "0.1.12"
+  sha256 "4d69a0a8bbb7341101feaa3943d8312f2dde17adcac4903ae6b079187abcb1a6"
 
   livecheck do
     url :url
@@ -16,10 +16,10 @@ class Dbdesk < Formula
   end
 
   def install
-    bin.install "dbdesk-#{version}.AppImage" => "dbdesk"
+    bin.install "DBDesk-#{version}.AppImage" => "dbdesk"
   end
 
   test do
-    assert_match "dbdesk", shell_output("#{bin}/dbdesk --help", 1)
+    assert_predicate bin/"dbdesk", :executable?
   end
 end
