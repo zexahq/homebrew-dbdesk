@@ -26,7 +26,7 @@ brew upgrade zexahq/dbdesk/dbdesk          # Linux
 brew upgrade --cask zexahq/dbdesk/dbdesk   # macOS
 ```
 
-The cask and formula are auto-updated daily via GitHub Actions when a new release is published.
+The cask and formula are auto-updated hourly via GitHub Actions when a new release is published.
 
 ## Uninstall
 
